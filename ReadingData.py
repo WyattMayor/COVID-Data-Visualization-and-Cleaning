@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 
 
@@ -35,17 +37,46 @@ CountyF = df[df['countyFIPS'] == 1001]
 GroupDate = df.groupby(["dates"])['Total Cases'].sum()
 GroupDate = GroupDate.to_frame()
 GroupDate = GroupDate.reset_index()
+USADateTotal = px.area(GroupDate, x= 'dates', y="Total Cases", title='Total USA Cases')
+USADateTotal.show()
+
+CountyF = df[df['countyFIPS'] == 17095]
+CountyFDate = CountyF.groupby(["dates"])['Total Cases'].sum()
+CountyFDate = CountyFDate.to_frame()
+CountyFDate = CountyFDate.reset_index()
+CountyGraph = px.area(CountyFDate, x= 'dates', y="Total Cases", title='Total Knox County Cases')
+CountyGraph.show()
+
+
+StateName = df[df['State'] == 'IL']
+StateGroupDates = StateName.groupby(["dates"])['Total Cases'].sum()
+StateGroupDates = StateGroupDates.to_frame()
+StateGroupDates = StateGroupDates.reset_index()
+IllinoisCases = px.area(StateGroupDates, x= 'dates', y="Total Cases", title='Total Illinois Cases')
+IllinoisCases.show()
+
+###SubPlots
+
+#Covidillinois = make_subplots(rows=1, cols=2)
+#Covidillinois.plt.
+
+
+
+
+
 ### Using the groupby function to group the states then the dates together and add up the cases
 GroupStateThenDate = df.groupby(["State","dates"])['Total Cases'].sum()
+GroupStateThenDate = GroupStateThenDate.to_frame()
+GroupStateThenDate= GroupStateThenDate.reset_index()
 ### Graph that shows how the cases rise over time
-DateTotalCases = px.area(GroupDate, x= 'dates', y="Total Cases")
+DateTotalCases = px.area(GroupDate, x= 'dates', y="Total Cases", title='Total Autauga County Cases')
 DateTotalCases.show()
 
 
 ###Stage 3
 
 
-NewCases = CountyF.groupby(["dates"])['Total Cases'].diff()
+
 
 ###Stage 4
 
