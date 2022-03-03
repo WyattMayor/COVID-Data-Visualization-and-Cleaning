@@ -11,9 +11,9 @@ import plotly.graph_objects as go
 
 ###Reading in csv to convert it into dataframe we can use
 pio.renderers.default = "browser"
-Confirmed = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_confirmed_usafacts.csv')
-County = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_county_population_usafacts.csv')
-Deaths = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_deaths_usafacts.csv')
+Confirmed = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_confirmed_usafacts.csv')
+County = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_county_population_usafacts.csv')
+Deaths = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_deaths_usafacts.csv')
 
 ### Adding columns to Index
 IndexReset = Confirmed.set_index(['countyFIPS', 'County Name', 'State', 'StateFIPS'])
@@ -47,6 +47,15 @@ CountyFDate = CountyFDate.reset_index()
 CountyGraph = px.area(CountyFDate, x= 'dates', y="Total Cases", title='Total Knox County Cases')
 CountyGraph.show()
 
+CoF = df[df['countyFIPS'] == 17095]
+CoF = CoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
+CoFDate = CoF['Total Cases'].diff()
+CoFNew = CoFDate.to_frame()
+CoFNew = CoFNew.reset_index()
+CoFNew = CoFNew.rename(columns = {"Total Cases": "New Cases"})
+CoFNew = CoFNew.reset_index()
+CountyGraph = px.bar(CoFNew, x= 'dates', y="New Cases", title='New Knox County Cases Per Day')
+CountyGraph.show()
 
 StateName = df[df['State'] == 'IL']
 StateGroupDates = StateName.groupby(["dates"])['Total Cases'].sum()
@@ -54,6 +63,26 @@ StateGroupDates = StateGroupDates.to_frame()
 StateGroupDates = StateGroupDates.reset_index()
 IllinoisCases = px.area(StateGroupDates, x= 'dates', y="Total Cases", title='Total Illinois Cases')
 IllinoisCases.show()
+
+StoF = df[df['State'] == 'IL']
+StoF = StoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
+StoFDate = StoF['Total Cases'].diff()
+StoFNew = StoFDate.to_frame()
+StoFNew = StoFNew.reset_index()
+StoFNew = StoFNew.rename(columns = {"Total Cases": "New Cases"})
+StoFNew = StoFNew.reset_index()
+ILGraph = px.bar(StoFNew, x= 'dates', y="New Cases", title='New IL Cases Per Day')
+ILGraph.show()
+
+USAoF = df
+USAoF = USAoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
+USAoFDate = USAoF['Total Cases'].diff()
+USAoFNew = USAoFDate.to_frame()
+USAoFNew = USAoFNew.reset_index()
+USAoFNew = USAoFNew.rename(columns = {"Total Cases": "New Cases"})
+USAoFNew = USAoFNew.reset_index()
+ILGraph = px.bar(USAoFNew, x= 'dates', y="New Cases", title='New USA Cases Per Day')
+ILGraph.show()
 
 ###SubPlots
 
@@ -68,7 +97,7 @@ IllinoisCases.show()
 GroupStateThenDate = df.groupby(["State","dates"])['Total Cases'].sum()
 GroupStateThenDate = GroupStateThenDate.to_frame()
 GroupStateThenDate= GroupStateThenDate.reset_index()
-### Graph that shows how the cases rise over time
+# ### Graph that shows how the cases rise over time
 DateTotalCases = px.area(GroupDate, x= 'dates', y="Total Cases", title='Total Autauga County Cases')
 DateTotalCases.show()
 
