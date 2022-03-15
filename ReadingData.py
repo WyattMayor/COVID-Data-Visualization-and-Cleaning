@@ -3,8 +3,8 @@ import plotly.express as px
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 ###Stage 1
 
@@ -52,16 +52,31 @@ StateName = df[df['State'] == 'IL']
 StateGroupDates = StateName.groupby(["dates"])['Total Cases'].sum()
 StateGroupDates = StateGroupDates.to_frame()
 StateGroupDates = StateGroupDates.reset_index()
-IllinoisCases = px.area(StateGroupDates, x= 'dates', y="Total Cases", title='Total Illinois Cases')
-IllinoisCases.show()
+#IllinoisCases = px.area(StateGroupDates, x= 'dates', y="Total Cases", title='Total Illinois Cases')
+#IllinoisCases.show()
+
+
+###Plots combined
+TotalCasesEach = go.Figure()
+TotalCasesEach.add_trace(go.Scatter(x=GroupDate["dates"],y=GroupDate["Total Cases"],name='USA'))
+TotalCasesEach.add_trace(go.Scatter(x=StateGroupDates["dates"],y=StateGroupDates["Total Cases"],name='Illinois'))
+TotalCasesEach.add_trace(go.Scatter(x=CountyFDate["dates"],y=CountyFDate["Total Cases"],name='Knox County'))
+TotalCasesEach.update_layout(
+    title= 'Total Cases',
+    yaxis_title="Number of Cases",
+    xaxis_title="days",
+    legend_title='Names')
+TotalCasesEach.show()
 
 ###SubPlots
-
-#Covidillinois = make_subplots(rows=1, cols=2)
-#Covidillinois.plt.
-
-
-
+TotalCasesSep = make_subplots(rows=1,cols=3,
+                              subplot_titles=("USA Total Cases","IL Total Cases", "Knox County Total Cases"))
+TotalCasesSep.add_trace(go.Scatter(x=GroupDate["dates"],y=GroupDate["Total Cases"],name='USA'),row=1, col=1)
+TotalCasesSep.add_trace(go.Scatter(x=StateGroupDates["dates"],y=StateGroupDates["Total Cases"],name='Illinois'),row=1, col=2)
+TotalCasesSep.add_trace(go.Scatter(x=CountyFDate["dates"],y=CountyFDate["Total Cases"],name='Knox County'),row=1, col=3)
+TotalCasesSep.update_layout(
+    legend_title='Names')
+TotalCasesSep.show()
 
 
 ### Using the groupby function to group the states then the dates together and add up the cases
@@ -69,14 +84,66 @@ GroupStateThenDate = df.groupby(["State","dates"])['Total Cases'].sum()
 GroupStateThenDate = GroupStateThenDate.to_frame()
 GroupStateThenDate= GroupStateThenDate.reset_index()
 ### Graph that shows how the cases rise over time
-DateTotalCases = px.area(GroupDate, x= 'dates', y="Total Cases", title='Total Autauga County Cases')
-DateTotalCases.show()
+
 
 
 ###Stage 3
+CoF = CountyFDate
+CoF = CoF.set_index(['dates'])
+CoFDate = CoF['Total Cases'].diff()
+CoFNew = CoFDate.to_frame()
+CoFNew = CoFNew.reset_index()
+CoFNew = CoFNew.rename(columns = {"Total Cases": "New Cases"})
+CoFNew = CoFNew.reset_index()
+CountyGraph = px.bar(CoFNew, x= 'dates', y="New Cases", title='New Knox County Cases Per Day')
+CountyGraph.show()
+
+StoF = StateGroupDates
+StoF = StoF.set_index(['dates'])
+StoFDate = StoF['Total Cases'].diff()
+StoFNew = StoFDate.to_frame()
+StoFNew = StoFNew.reset_index()
+StoFNew = StoFNew.rename(columns = {"Total Cases": "New Cases"})
+StoFNew = StoFNew.reset_index()
+ILGraph = px.bar(StoFNew, x= 'dates', y="New Cases", title='New IL Cases Per Day')
+ILGraph.show()
+
+USAoF = GroupDate
+USAoF = USAoF.set_index(['dates'])
+USAoFDate = USAoF['Total Cases'].diff()
+USAoFNew = USAoFDate.to_frame()
+USAoFNew = USAoFNew.reset_index()
+USAoFNew = USAoFNew.rename(columns = {"Total Cases": "New Cases"})
+USAoFNew = USAoFNew.reset_index()
+ILGraph = px.bar(USAoFNew, x= 'dates', y="New Cases", title='New USA Cases Per Day')
+ILGraph.show()
+
+
+###Plots combined
+NewCasesEachDay = go.Figure()
+NewCasesEachDay.add_trace(go.Scatter(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'))
+NewCasesEachDay.add_trace(go.Scatter(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'))
+NewCasesEachDay.add_trace(go.Scatter(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'))
+NewCasesEachDay.update_layout(
+    title= 'New Cases Per Day',
+    yaxis_title="Number of Cases",
+    xaxis_title="days",
+    legend_title='Names')
+NewCasesEachDay.show()
+
+###SubPlots
+NewCasesEachDay2 = make_subplots(rows=3,cols=1,
+                              subplot_titles=("USA Total Cases","IL Total Cases", "Knox County Total Cases"))
+NewCasesEachDay2.add_trace(go.Scatter(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'),row=1, col=1)
+NewCasesEachDay2.add_trace(go.Scatter(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'),row=2, col=1)
+NewCasesEachDay2.add_trace(go.Scatter(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'),row=3, col=1)
+NewCasesEachDay2.update_layout(
+    legend_title='Names')
+NewCasesEachDay2.show()
+
+
+# ###Stage 4
 
 
 
-
-###Stage 4
 
