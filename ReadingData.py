@@ -47,15 +47,7 @@ CountyFDate = CountyFDate.reset_index()
 CountyGraph = px.area(CountyFDate, x= 'dates', y="Total Cases", title='Total Knox County Cases')
 CountyGraph.show()
 
-CoF = df[df['countyFIPS'] == 17095]
-CoF = CoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
-CoFDate = CoF['Total Cases'].diff()
-CoFNew = CoFDate.to_frame()
-CoFNew = CoFNew.reset_index()
-CoFNew = CoFNew.rename(columns = {"Total Cases": "New Cases"})
-CoFNew = CoFNew.reset_index()
-CountyGraph = px.bar(CoFNew, x= 'dates', y="New Cases", title='New Knox County Cases Per Day')
-CountyGraph.show()
+
 
 StateName = df[df['State'] == 'IL']
 StateGroupDates = StateName.groupby(["dates"])['Total Cases'].sum()
@@ -64,25 +56,9 @@ StateGroupDates = StateGroupDates.reset_index()
 IllinoisCases = px.area(StateGroupDates, x= 'dates', y="Total Cases", title='Total Illinois Cases')
 IllinoisCases.show()
 
-StoF = df[df['State'] == 'IL']
-StoF = StoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
-StoFDate = StoF['Total Cases'].diff()
-StoFNew = StoFDate.to_frame()
-StoFNew = StoFNew.reset_index()
-StoFNew = StoFNew.rename(columns = {"Total Cases": "New Cases"})
-StoFNew = StoFNew.reset_index()
-ILGraph = px.bar(StoFNew, x= 'dates', y="New Cases", title='New IL Cases Per Day')
-ILGraph.show()
 
-USAoF = df
-USAoF = USAoF.set_index(['dates','countyFIPS', 'County Name', 'State', 'StateFIPS'])
-USAoFDate = USAoF['Total Cases'].diff()
-USAoFNew = USAoFDate.to_frame()
-USAoFNew = USAoFNew.reset_index()
-USAoFNew = USAoFNew.rename(columns = {"Total Cases": "New Cases"})
-USAoFNew = USAoFNew.reset_index()
-ILGraph = px.bar(USAoFNew, x= 'dates', y="New Cases", title='New USA Cases Per Day')
-ILGraph.show()
+
+
 
 ###SubPlots
 
@@ -103,9 +79,34 @@ DateTotalCases.show()
 
 
 ###Stage 3
+CoF = CountyFDate
+CoF = CoF.set_index(['dates'])
+CoFDate = CoF['Total Cases'].diff()
+CoFNew = CoFDate.to_frame()
+CoFNew = CoFNew.reset_index()
+CoFNew = CoFNew.rename(columns = {"Total Cases": "New Cases"})
+CoFNew = CoFNew.reset_index()
+CountyGraph = px.bar(CoFNew, x= 'dates', y="New Cases", title='New Knox County Cases Per Day')
+CountyGraph.show()
 
+StoF = StateGroupDates
+StoF = StoF.set_index(['dates'])
+StoFDate = StoF['Total Cases'].diff()
+StoFNew = StoFDate.to_frame()
+StoFNew = StoFNew.reset_index()
+StoFNew = StoFNew.rename(columns = {"Total Cases": "New Cases"})
+StoFNew = StoFNew.reset_index()
+ILGraph = px.bar(StoFNew, x= 'dates', y="New Cases", title='New IL Cases Per Day')
+ILGraph.show()
 
-
-
-###Stage 4
+USAoF = GroupDate
+USAoF = USAoF.set_index(['dates'])
+USAoFDate = USAoF['Total Cases'].diff()
+USAoFNew = USAoFDate.to_frame()
+USAoFNew = USAoFNew.reset_index()
+USAoFNew = USAoFNew.rename(columns = {"Total Cases": "New Cases"})
+USAoFNew = USAoFNew.reset_index()
+ILGraph = px.bar(USAoFNew, x= 'dates', y="New Cases", title='New USA Cases Per Day')
+ILGraph.show()
+# ###Stage 4
 
