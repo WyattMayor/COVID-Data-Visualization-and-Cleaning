@@ -3,20 +3,26 @@ import plotly.express as px
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 ###Stage 1
 
 
 ###Reading in csv to convert it into dataframe we can use
 pio.renderers.default = "browser"
-Confirmed = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_confirmed_usafacts.csv')
-County = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_county_population_usafacts.csv')
-Deaths = pd.read_csv(r'C:/Users/Colto/CovidGraphs/covid_deaths_usafacts.csv')
 
+Confirmed = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_confirmed_usafacts.csv')
+Pop = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_county_population_usafacts.csv')
+Deaths = pd.read_csv(r'/Users/wyattmayor/Comp240/CovidGraphs/covid_deaths_usafacts.csv')
+
+
+ConfirmedCountyFips = Confirmed[Confirmed['countyFIPS'] > 0]
+PopCountyFips = Pop[Pop['countyFIPS'] > 0]
+PopCountyFips = PopCountyFips.drop(columns = ['County Name','State'])
+df1 = (ConfirmedCountyFips.merge(PopCountyFips, left_on=['countyFIPS'], right_on=['countyFIPS']))
 ### Adding columns to Index
-IndexReset = Confirmed.set_index(['countyFIPS', 'County Name', 'State', 'StateFIPS'])
+IndexReset = df1.set_index(['countyFIPS', 'County Name', 'State', 'StateFIPS', 'population'])
+
 ### stacking non index colums into one column (dates)
 StackedDates = IndexReset.stack()
 ### Turning the stacked series back into dataframe
@@ -24,10 +30,12 @@ TotalCasesColumn = StackedDates.to_frame('Total Cases')
 ### moving all colums out of the index
 IndexReworked = TotalCasesColumn.reset_index()
 ###renaming the stacked column to dates
-df = IndexReworked.rename(columns={"level_4": "dates"})
+df = IndexReworked.rename(columns={"level_5": "dates"})
 df['dates'] = pd.to_datetime(df["dates"])
 ### only shows entries that have a county fips 1001
 CountyF = df[df['countyFIPS'] == 1001]
+
+###
 
 
 ###Stage 2
@@ -41,7 +49,7 @@ USADateTotal = px.area(GroupDate, x= 'dates', y="Total Cases", title='Total USA 
 USADateTotal.show()
 
 CountyF = df[df['countyFIPS'] == 17095]
-CountyFDate = CountyF.groupby(["dates"])['Total Cases'].sum()
+CountyFDate = CountyF.groupby(["dates",'population'])['Total Cases'].sum()
 CountyFDate = CountyFDate.to_frame()
 CountyFDate = CountyFDate.reset_index()
 CountyGraph = px.area(CountyFDate, x= 'dates', y="Total Cases", title='Total Knox County Cases')
@@ -118,7 +126,7 @@ GroupStateThenDate= GroupStateThenDate.reset_index()
 
 ###Stage 3
 CoF = CountyFDate
-CoF = CoF.set_index(['dates'])
+CoF = CoF.set_index(['dates',"population"])
 CoFDate = CoF['Total Cases'].diff()
 CoFNew = CoFDate.to_frame()
 CoFNew = CoFNew.reset_index()
@@ -171,7 +179,83 @@ NewCasesEachDay2.update_layout(
 NewCasesEachDay2.show()
 
 
+CoFNew['casesper100000'] = (CoFNew['New Cases']/CoFNew['population'])*100000
+df["casesper100000"] = (df["Total Cases"]/df["population"])*100000
+
+
+
 # ###Stage 4
+#weekly USA
+USAw = GroupDate
+Unitedweek = USAw.set_index(['dates'])
+USA7day = Unitedweek['Total Cases'].diff()
+USAweek = USA7day.rolling(window=7, min_periods = 0).sum()
+USAweek = USAweek.to_frame()
+USAweek = USAweek.reset_index()
+USAweek = USAweek.rename(columns = {"Total Cases": "New Cases"})
+USAweek = USAweek.reset_index()
+USGraph = px.line(USAweek, x= 'dates', y="New Cases", title='New USA Cases Weekly Average')
+USGraph.show()
+
+#14 day USA
+USA14 = GroupDate
+United14 = USA14.set_index(['dates'])
+USA14day = United14['Total Cases'].diff()
+USA14ave = USA14day.rolling(window=14, min_periods = 0).sum()
+USA14ave = USA14ave.to_frame()
+USA14ave = USA14ave.reset_index()
+USA14ave = USA14ave.rename(columns = {"Total Cases": "New Cases"})
+USA14ave = USA14ave.reset_index()
+USGraph = px.line(USA14ave, x= 'dates', y="New Cases", title='New USA Cases 14 Day Average')
+USGraph.show()
+
+#weekly IL
+ILw = StateGroupDates
+ILStateweek = ILw.set_index(['dates'])
+IL7day = ILStateweek['Total Cases'].diff()
+ILweek = IL7day.rolling(window=7, min_periods = 0).sum()
+ILweek = ILweek.to_frame()
+ILweek = ILweek.reset_index()
+ILweek = ILweek.rename(columns = {"Total Cases": "New Cases"})
+ILweek = ILweek.reset_index()
+ILGraph = px.line(ILweek, x= 'dates', y="New Cases", title='New IL Cases Weekly Average')
+ILGraph.show()
+
+#14 day IL
+IL14 = StateGroupDates
+ILState14 = IL14.set_index(['dates'])
+IL14day = ILState14['Total Cases'].diff()
+IL14ave = IL14day.rolling(window=14, min_periods = 0).sum()
+IL14ave = IL14ave.to_frame()
+IL14ave = IL14ave.reset_index()
+IL14ave = IL14ave.rename(columns = {"Total Cases": "New Cases"})
+IL14ave = IL14ave.reset_index()
+ILGraph = px.line(IL14ave, x= 'dates', y="New Cases", title='New IL Cases 14 Day Average')
+ILGraph.show()
+
+#weekly county
+Countyw = CountyFDate
+Countyweek = Countyw.set_index(['dates'])
+CO7day = Countyweek['Total Cases'].diff()
+Ctyweek = CO7day.rolling(window=7, min_periods = 0).sum()
+Ctyweek = Ctyweek.to_frame()
+Ctyweek = Ctyweek.reset_index()
+Ctyweek = Ctyweek.rename(columns = {"Total Cases": "New Cases"})
+Ctyweek = Ctyweek.reset_index()
+CountyGraph = px.line(Ctyweek, x= 'dates', y="New Cases", title='New Knox Cases Weekly Average')
+CountyGraph.show()
+
+#14 day county
+County14 = CountyFDate
+Cty14 = County14.set_index(['dates'])
+County14day = Cty14['Total Cases'].diff()
+Cty14ave = County14day.rolling(window=14, min_periods = 0).sum()
+Cty14ave = Cty14ave.to_frame()
+Cty14ave = Cty14ave.reset_index()
+Cty14ave = Cty14ave.rename(columns = {"Total Cases": "New Cases"})
+Cty14ave = Cty14ave.reset_index()
+CountyGraph = px.line(Cty14ave, x= 'dates', y="New Cases", title='New Knox Cases 14 Day Average')
+CountyGraph.show()
 
 
 
