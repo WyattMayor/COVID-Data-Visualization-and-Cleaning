@@ -3,8 +3,10 @@ import plotly.express as px
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-
-
+from urllib.request import urlopen
+import json
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
 ###Stage 1
 
 
@@ -108,9 +110,9 @@ ILGraph.show()
 ###SubPlots
 TotalCasesSep = make_subplots(rows=1,cols=3,
                               subplot_titles=("USA Total Cases","IL Total Cases", "Knox County Total Cases"))
-TotalCasesSep.add_trace(go.Scatter(x=GroupDate["dates"],y=GroupDate["Total Cases"],name='USA'),row=1, col=1)
-TotalCasesSep.add_trace(go.Scatter(x=StateGroupDates["dates"],y=StateGroupDates["Total Cases"],name='Illinois'),row=1, col=2)
-TotalCasesSep.add_trace(go.Scatter(x=CountyFDate["dates"],y=CountyFDate["Total Cases"],name='Knox County'),row=1, col=3)
+TotalCasesSep.add_trace(go.Scatter(x=GroupDate["dates"],y=GroupDate["Total Cases"],name='USA',fill='tozeroy'),row=1, col=1)
+TotalCasesSep.add_trace(go.Scatter(x=StateGroupDates["dates"],y=StateGroupDates["Total Cases"],name='Illinois',fill='tozeroy'),row=1, col=2)
+TotalCasesSep.add_trace(go.Scatter(x=CountyFDate["dates"],y=CountyFDate["Total Cases"],name='Knox County',fill='tozeroy'),row=1, col=3)
 TotalCasesSep.update_layout(
     legend_title='Names')
 TotalCasesSep.show()
@@ -158,9 +160,9 @@ ILGraph.show()
 
 ###Plots combined
 NewCasesEachDay = go.Figure()
-NewCasesEachDay.add_trace(go.Scatter(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'))
-NewCasesEachDay.add_trace(go.Scatter(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'))
-NewCasesEachDay.add_trace(go.Scatter(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'))
+NewCasesEachDay.add_trace(go.Bar(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'))
+NewCasesEachDay.add_trace(go.Bar(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'))
+NewCasesEachDay.add_trace(go.Bar(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'))
 NewCasesEachDay.update_layout(
     title= 'New Cases Per Day',
     yaxis_title="Number of Cases",
@@ -171,19 +173,22 @@ NewCasesEachDay.show()
 ###SubPlots
 NewCasesEachDay2 = make_subplots(rows=3,cols=1,
                               subplot_titles=("USA Total Cases","IL Total Cases", "Knox County Total Cases"))
-NewCasesEachDay2.add_trace(go.Scatter(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'),row=1, col=1)
-NewCasesEachDay2.add_trace(go.Scatter(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'),row=2, col=1)
-NewCasesEachDay2.add_trace(go.Scatter(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'),row=3, col=1)
+NewCasesEachDay2.add_trace(go.Bar(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'),row=1, col=1)
+NewCasesEachDay2.add_trace(go.Bar(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'),row=2, col=1)
+NewCasesEachDay2.add_trace(go.Bar(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'),row=3, col=1)
 NewCasesEachDay2.update_layout(
     legend_title='Names')
 NewCasesEachDay2.show()
 
-
+#USAoFNew['casesper100000'] = (USAoFNew['New Cases']/USAoFNew['population'])*100000
+#StoFNew['casesper100000'] = (StoFNew['New Cases']/StoFNew['population'])*100000
 CoFNew['casesper100000'] = (CoFNew['New Cases']/CoFNew['population'])*100000
 df["casesper100000"] = (df["Total Cases"]/df["population"])*100000
 
-
-
+casesperknox = go.Figure()
+casesperknox.add_trace(go.Bar(x=CoFNew['dates'], y=CoFNew['casesper100000'],name='Knox cases per 100000' ))
+casesperknox.show()
+#%%
 # ###Stage 4
 #weekly USA
 USAw = GroupDate
@@ -194,9 +199,9 @@ USAweek = USAweek.to_frame()
 USAweek = USAweek.reset_index()
 USAweek = USAweek.rename(columns = {"Total Cases": "New Cases"})
 USAweek = USAweek.reset_index()
-USGraph = px.line(USAweek, x= 'dates', y="New Cases", title='New USA Cases Weekly Average')
+USGraph = px.area(USAweek, x= 'dates', y="New Cases", title='New USA Cases Weekly Average')
 USGraph.show()
-
+#%%
 #14 day USA
 USA14 = GroupDate
 United14 = USA14.set_index(['dates'])
@@ -206,9 +211,9 @@ USA14ave = USA14ave.to_frame()
 USA14ave = USA14ave.reset_index()
 USA14ave = USA14ave.rename(columns = {"Total Cases": "New Cases"})
 USA14ave = USA14ave.reset_index()
-USGraph = px.line(USA14ave, x= 'dates', y="New Cases", title='New USA Cases 14 Day Average')
+USGraph = px.area(USA14ave, x= 'dates', y="New Cases", title='New USA Cases 14 Day Average')
 USGraph.show()
-
+#%%
 #weekly IL
 ILw = StateGroupDates
 ILStateweek = ILw.set_index(['dates'])
@@ -218,9 +223,9 @@ ILweek = ILweek.to_frame()
 ILweek = ILweek.reset_index()
 ILweek = ILweek.rename(columns = {"Total Cases": "New Cases"})
 ILweek = ILweek.reset_index()
-ILGraph = px.line(ILweek, x= 'dates', y="New Cases", title='New IL Cases Weekly Average')
+ILGraph = px.area(ILweek, x= 'dates', y="New Cases", title='New IL Cases Weekly Average')
 ILGraph.show()
-
+#%%
 #14 day IL
 IL14 = StateGroupDates
 ILState14 = IL14.set_index(['dates'])
@@ -230,9 +235,9 @@ IL14ave = IL14ave.to_frame()
 IL14ave = IL14ave.reset_index()
 IL14ave = IL14ave.rename(columns = {"Total Cases": "New Cases"})
 IL14ave = IL14ave.reset_index()
-ILGraph = px.line(IL14ave, x= 'dates', y="New Cases", title='New IL Cases 14 Day Average')
+ILGraph = px.area(IL14ave, x= 'dates', y="New Cases", title='New IL Cases 14 Day Average')
 ILGraph.show()
-
+#%%
 #weekly county
 Countyw = CountyFDate
 Countyweek = Countyw.set_index(['dates'])
@@ -242,9 +247,9 @@ Ctyweek = Ctyweek.to_frame()
 Ctyweek = Ctyweek.reset_index()
 Ctyweek = Ctyweek.rename(columns = {"Total Cases": "New Cases"})
 Ctyweek = Ctyweek.reset_index()
-CountyGraph = px.line(Ctyweek, x= 'dates', y="New Cases", title='New Knox Cases Weekly Average')
+CountyGraph = px.area(Ctyweek, x= 'dates', y="New Cases", title='New Knox Cases Weekly Average')
 CountyGraph.show()
-
+#%%
 #14 day county
 County14 = CountyFDate
 Cty14 = County14.set_index(['dates'])
@@ -254,8 +259,64 @@ Cty14ave = Cty14ave.to_frame()
 Cty14ave = Cty14ave.reset_index()
 Cty14ave = Cty14ave.rename(columns = {"Total Cases": "New Cases"})
 Cty14ave = Cty14ave.reset_index()
-CountyGraph = px.line(Cty14ave, x= 'dates', y="New Cases", title='New Knox Cases 14 Day Average')
+CountyGraph = px.area(Cty14ave, x= 'dates', y="New Cases", title='New Knox Cases 14 Day Average')
 CountyGraph.show()
+
+
+
+
+
+
+
+
+
+
+#%%
+#df = df["countyFIPS"].apply(lambda f:"{:4}".format(f))
+df = df.astype({"countyFIPS": str})
+df['countyFIPS'] = df['countyFIPS'].str.zfill(5)
+SpecDate = df[df['dates'] == "2022-01-15"]
+UsaGraph = px.choropleth(SpecDate, geojson=counties,
+              locations = "countyFIPS",
+              color="casesper100000", 
+              color_continuous_scale="Inferno",
+              scope="usa",
+              range_color=(0, 50000),
+              title='Cases Per 100000',
+             )
+UsaGraph.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+UsaGraph.show()
+
+USA = SpecDate.groupby(["State"])
+UsaGraph = px.choropleth(SpecDate,
+              locations = "State",
+              color="casesper100000", 
+              color_continuous_scale="Inferno",
+              scope="usa",
+              range_color=(0, 50000),
+              title='Cases Per 100000',
+             )
+UsaGraph.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+UsaGraph.show()
+
+
+AllGraphs = go.Figure()
+AllGraphs = make_subplots(rows=3,cols=3,
+                             subplot_titles=("USA Total Cases","IL Total Cases", "Knox County Total Cases" ,"USA New Cases", "Il New Cases", "Knox County New Cases"))
+AllGraphs.add_trace(go.Scatter(x=GroupDate["dates"],y=GroupDate["Total Cases"],name='USA',fill='tozeroy'),row=1, col=1)
+AllGraphs.add_trace(go.Scatter(x=StateGroupDates["dates"],y=StateGroupDates["Total Cases"],name='Illinois',fill='tozeroy'),row=1, col=2)
+AllGraphs.add_trace(go.Scatter(x=CountyFDate["dates"],y=CountyFDate["Total Cases"],name='Knox County',fill='tozeroy'),row=1, col=3)
+AllGraphs.add_trace(go.Bar(x=USAoFNew["dates"],y=USAoFNew["New Cases"],name='USA'),row=2,col=1)
+AllGraphs.add_trace(go.Bar(x=StoFNew["dates"],y=StoFNew["New Cases"],name='Illinois'),row=2,col=2)
+AllGraphs.add_trace(go.Bar(x=CoFNew["dates"],y=CoFNew["New Cases"],name='Knox County'),row=2,col=3)
+AllGraphs.add_trace(go.Bar(x=CoFNew['dates'], y=CoFNew['casesper100000'],name='Knox cases per 100000' ),row=3,col=1)
+
+AllGraphs.update_layout(
+    legend_title='Names')
+AllGraphs.show()
+
+
+
 
 
 
