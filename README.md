@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-This project is dedicated to the cleaning and visualization of COVID-19 data to provide clear and insightful information about the pandemic's spread and status before jan 2022. Utilizing publicly available datasets, our goal is to create a comprehensive and accessible visual representation of COVID-19 trends and statistics.
+This project is dedicated to the cleaning and visualization of COVID-19 data to provide clear and insightful information about the pandemic's spread and status before jan 2022. Utilizing publicly available datasets, , my goal is to create a comprehensive and accessible visual representation of COVID-19 trends and statistics.
 
 ## Datasets
 
